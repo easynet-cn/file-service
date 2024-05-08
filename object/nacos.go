@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/easynet-cn/file-service/util"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
@@ -18,6 +20,27 @@ var (
 
 func InitNacos() {
 	Config = viper.New()
+
+	flagSet := pflag.NewFlagSet("system", pflag.ContinueOnError)
+
+	flagSet.ParseErrorsWhitelist = pflag.ParseErrorsWhitelist{UnknownFlags: true}
+	flagSet.SortFlags = false
+
+	flagSet.String("spring.profiles.active", "dev", "active profile")
+	flagSet.String("nacos.namespace", "", "nacos namespace")
+	flagSet.String("nacos.host", "127.0.0.1", "nacos host")
+	flagSet.Int("nacos.port", 8848, "nacos port")
+	flagSet.String("nacos.context-path", "nacos", "nacos context path")
+	flagSet.String("nacos.group", "group", "nacos group")
+	flagSet.String("nacos.username", "", "nacos username")
+	flagSet.String("nacos.password", "", "nacos password")
+	flagSet.Int("server.port", 6103, "server port")
+
+	flagSet.Parse(os.Args[1:])
+
+	if err := Config.BindPFlags(flagSet); err != nil {
+		panic(err)
+	}
 
 	Config.SetConfigName("application")
 	Config.SetConfigType("yml")
@@ -32,7 +55,7 @@ func InitNacos() {
 		{
 			IpAddr:      Config.GetString("nacos.host"),
 			Port:        Config.GetUint64("nacos.port"),
-			ContextPath: "/nacos",
+			ContextPath: Config.GetString("nacos.context-path"),
 		},
 	}
 
@@ -60,7 +83,7 @@ func InitNacos() {
 
 	if content, err := configClient.GetConfig(vo.ConfigParam{
 		DataId: fmt.Sprintf("%s-%s.yml", Config.GetString("spring.application.name"), Config.GetString("spring.profiles.active")),
-		Group:  "DEFAULT_GROUP"}); err != nil {
+		Group:  Config.GetString("nacos.group")}); err != nil {
 		log.Fatalf("获取配置文件失败: %s", err.Error())
 	} else {
 		remoteConfig := viper.New()
