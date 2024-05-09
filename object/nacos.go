@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/easynet-cn/file-service/util"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/file"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -26,6 +30,7 @@ func InitNacos() {
 	flagSet.ParseErrorsWhitelist = pflag.ParseErrorsWhitelist{UnknownFlags: true}
 	flagSet.SortFlags = false
 
+	flagSet.String("spring.config.location", "", "active profile")
 	flagSet.String("spring.profiles.active", "dev", "active profile")
 	flagSet.String("nacos.namespace", "", "nacos namespace")
 	flagSet.String("nacos.host", "127.0.0.1", "nacos host")
@@ -42,9 +47,29 @@ func InitNacos() {
 		panic(err)
 	}
 
-	Config.SetConfigName("application")
 	Config.SetConfigType("yml")
-	Config.AddConfigPath("./")
+
+	configPath := "./"
+	configName := "application"
+
+	configLocation := Config.GetString("spring.config.location")
+
+	if configLocation != "" {
+		if file.IsExistFile(configLocation) {
+			configPath = filepath.Dir(configLocation)
+			configName = strings.TrimSuffix(filepath.Base(configLocation), filepath.Ext(configLocation))
+		}
+	} else {
+		activeProfile := Config.GetString("spring.profiles.active")
+
+		if activeProfile != "" && file.IsExistFile(path.Join("./", fmt.Sprintf("application-%s.yml", activeProfile))) {
+			configName = fmt.Sprintf("application-%s", activeProfile)
+		}
+	}
+
+	Config.AddConfigPath(configPath)
+	Config.SetConfigName(configName)
+	Config.SetConfigType("yml")
 
 	if err := Config.ReadInConfig(); err != nil {
 		panic(err)
