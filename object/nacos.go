@@ -30,7 +30,7 @@ func InitNacos() {
 	flagSet.ParseErrorsWhitelist = pflag.ParseErrorsWhitelist{UnknownFlags: true}
 	flagSet.SortFlags = false
 
-	flagSet.String("spring.config.location", "", "active profile")
+	flagSet.String("spring.config.location", "", "config location")
 	flagSet.String("spring.profiles.active", "dev", "active profile")
 	flagSet.String("nacos.namespace", "", "nacos namespace")
 	flagSet.String("nacos.host", "127.0.0.1", "nacos host")
