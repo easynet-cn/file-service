@@ -40,16 +40,16 @@ type File struct {
 var (
 	ossClientCache = &sync.Map{}
 	functions      = map[string]govaluate.ExpressionFunction{
-		"hasPrefix": func(args ...interface{}) (interface{}, error) {
+		"hasPrefix": func(args ...any) (any, error) {
 			return strings.HasPrefix(args[0].(string), args[1].(string)), nil
 		},
-		"hasSuffix": func(args ...interface{}) (interface{}, error) {
+		"hasSuffix": func(args ...any) (any, error) {
 			return strings.HasSuffix(args[0].(string), args[1].(string)), nil
 		},
-		"toLower": func(args ...interface{}) (interface{}, error) {
+		"toLower": func(args ...any) (any, error) {
 			return strings.ToLower(args[0].(string)), nil
 		},
-		"toUpper": func(args ...interface{}) (interface{}, error) {
+		"toUpper": func(args ...any) (any, error) {
 			return strings.ToUpper(args[0].(string)), nil
 		},
 	}
@@ -168,6 +168,10 @@ func GetUploadToken(uploadFile OssUploadFile) (*OssUploadToken, error) {
 		secretAccessKey := appEntity.AccessKeySecret
 		uploadUrl := fmt.Sprintf("//%s.%s", bucket, endpoint)
 
+		if ossBucket.Domain != "" {
+			uploadUrl = fmt.Sprintf("//%s", ossBucket.Domain)
+		}
+
 		expiredInSec := int64(60 * 60)
 		expiration := time.Now().Add(time.Duration(60 * time.Minute)).UTC().Format(time.RFC3339Nano)
 
@@ -206,7 +210,7 @@ func SearchFiles(searchParam SearchFileParam) ([]File, error) {
 
 	engine := GetDB()
 	sb := new(strings.Builder)
-	params := make([]interface{}, 0, len(searchParam.Ids)+len(searchParam.FileKeys))
+	params := make([]any, 0, len(searchParam.Ids)+len(searchParam.FileKeys))
 
 	sb.WriteString("SELECT f.*,b.name AS bucket_name,b.domain FROM file f JOIN bucket b ON f.bucket_id=b.id JOIN app a ON b.app_id=a.id")
 	sb.WriteString(" WHERE f.del_status=0 AND b.del_status=0 AND a.del_status=0")
@@ -314,7 +318,7 @@ func SearchPageFiles(searchParam SearchFilePageParam) (PageResult, error) {
 			return *NewPageResult(), err
 		}
 
-		pageResult := &PageResult{Total: total, Data: make([]interface{}, len(ms))}
+		pageResult := &PageResult{Total: total, Data: make([]any, len(ms))}
 
 		pageResult.TotalPages = pageResult.GetTotalPages(searchParam.PageSize)
 
@@ -324,7 +328,7 @@ func SearchPageFiles(searchParam SearchFilePageParam) (PageResult, error) {
 
 		return *pageResult, nil
 	} else {
-		return PageResult{Data: make([]interface{}, 0)}, nil
+		return PageResult{Data: make([]any, 0)}, nil
 	}
 }
 
@@ -410,7 +414,7 @@ func getUrl(ossClient *oss.Client, app repository.App, bucket repository.Bucket,
 				if expression, err := govaluate.NewEvaluableExpressionWithFunctions(processConfig.Expression, functions); err != nil {
 					log.Logger.Error("解析ProcessConfig.Expression失败", zap.Any("ProcessConfig.Expression", processConfig.Expression), zap.Error(err))
 				} else {
-					parameters := make(map[string]interface{})
+					parameters := make(map[string]any)
 
 					parameters["bucket"] = bucket.Name
 					parameters["fileKey"] = fileKey
@@ -487,7 +491,7 @@ func getUrl(ossClient *oss.Client, app repository.App, bucket repository.Bucket,
 				if expression, err := govaluate.NewEvaluableExpressionWithFunctions(processConfig.Expression, functions); err != nil {
 					log.Logger.Error("解析ProcessConfig.Expression失败", zap.Any("ProcessConfig.Expression", processConfig.Expression), zap.Error(err))
 				} else {
-					parameters := make(map[string]interface{})
+					parameters := make(map[string]any)
 
 					parameters["bucket"] = bucket.Name
 					parameters["fileKey"] = fileKey
@@ -543,9 +547,9 @@ func getUrl(ossClient *oss.Client, app repository.App, bucket repository.Bucket,
 	return sb.String()
 }
 
-func buildSearchFilesWhere(searchParam SearchFilePageParam) (string, []interface{}) {
+func buildSearchFilesWhere(searchParam SearchFilePageParam) (string, []any) {
 	sb := new(strings.Builder)
-	params := make([]interface{}, 0, len(searchParam.Ids)+len(searchParam.FileKeys)+2)
+	params := make([]any, 0, len(searchParam.Ids)+len(searchParam.FileKeys)+2)
 
 	sb.WriteString(" WHERE f.del_status=0 AND b.del_status=0 AND a.del_status=0")
 
@@ -724,7 +728,7 @@ func CreateFileData(file File) ([]File, error) {
 	}
 
 	sb := new(strings.Builder)
-	params := make([]interface{}, 0, 1)
+	params := make([]any, 0, 1)
 
 	sb.WriteString("SELECT f.*,b.name AS bucket_name,b.domain FROM file f JOIN bucket b ON f.bucket_id=b.id JOIN app a ON b.app_id=a.id")
 	sb.WriteString(" WHERE f.del_status=0 AND b.del_status=0 AND a.del_status=0")
@@ -780,7 +784,7 @@ func BatchCreateFile(files []File) ([]File, error) {
 		}
 
 		sb := new(strings.Builder)
-		params := make([]interface{}, 0, 1)
+		params := make([]any, 0, 1)
 
 		sb.WriteString("SELECT f.*,b.name AS bucket_name,b.domain FROM file f JOIN bucket b ON f.bucket_id=b.id JOIN app a ON b.app_id=a.id")
 		sb.WriteString(" WHERE f.del_status=0 AND b.del_status=0 AND a.del_status=0")

@@ -136,14 +136,14 @@ func (id *ObjectID) UnmarshalJSON(b []byte) error {
 		copy(id[:], b)
 	default:
 		// Extended JSON
-		var res interface{}
+		var res any
 		err := json.Unmarshal(b, &res)
 		if err != nil {
 			return err
 		}
 		str, ok := res.(string)
 		if !ok {
-			m, ok := res.(map[string]interface{})
+			m, ok := res.(map[string]any)
 			if !ok {
 				return fmt.Errorf("not an extended JSON ObjectID")
 			}

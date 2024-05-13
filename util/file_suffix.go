@@ -102,7 +102,7 @@ func GetFileType(fSrc []byte) string {
 	var fileType string
 	fileCode := bytesToHexString(fSrc)
 
-	fileTypeMap.Range(func(key, value interface{}) bool {
+	fileTypeMap.Range(func(key, value any) bool {
 		k := key.(string)
 		v := value.(string)
 		if strings.HasPrefix(fileCode, strings.ToLower(k)) ||

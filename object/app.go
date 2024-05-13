@@ -31,7 +31,7 @@ func SearchApps(searchParam PageParam) (PageResult, error) {
 			return *NewPageResult(), err
 		}
 
-		pageResult := &PageResult{Total: total, Data: make([]interface{}, len(ms))}
+		pageResult := &PageResult{Total: total, Data: make([]any, len(ms))}
 
 		pageResult.TotalPages = pageResult.GetTotalPages(searchParam.PageSize)
 
@@ -41,7 +41,7 @@ func SearchApps(searchParam PageParam) (PageResult, error) {
 
 		return *pageResult, nil
 	} else {
-		return PageResult{Data: make([]interface{}, 0)}, nil
+		return PageResult{Data: make([]any, 0)}, nil
 	}
 }
 
