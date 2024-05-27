@@ -3,7 +3,7 @@ package repository
 type File struct {
 	Id             int64  `xorm:"bigint 'id' autoincr pk notnull comment('ID')" json:"id"`
 	BucketId       int64  `xorm:"bigint 'bucket_id' notnull default(0) comment('空间ID')" json:"bucketId"`
-	FileKey        string `xorm:"varchar(500) 'file_key' notnull default('') index('idx_file_key') comment('文件键值')" json:"fileKey"`
+	FileKey        string `xorm:"varchar(500) 'file_key' notnull default('') index comment('文件键值')" json:"fileKey"`
 	SourceFile     string `xorm:"varchar(1000) 'source_file' notnull default('') comment('原文件')" json:"sourceFile"`
 	SourceFileSize int64  `xorm:"bigint 'source_file_size' notnull default(0) comment('原文件大小')" json:"sourceFileSize"`
 	SourceFileType string `xorm:"varchar(50) 'source_file_type' notnull default('') comment('原文件类型')" json:"sourceFileType"`
