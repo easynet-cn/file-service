@@ -11,6 +11,8 @@ import (
 
 	"github.com/easynet-cn/file-service/util"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/config_client"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/file"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
@@ -25,6 +27,60 @@ var (
 func InitNacos() {
 	Config = viper.New()
 
+	if flagSet, err := getFlatSet(); err != nil {
+		panic(err)
+	} else if err := Config.BindPFlags(flagSet); err != nil {
+		panic(err)
+	}
+
+	Config.SetConfigType("yml")
+
+	configPath, configName := getLocalConfigPathAndName(Config)
+
+	Config.AddConfigPath(configPath)
+	Config.SetConfigName(configName)
+	Config.SetConfigType("yml")
+
+	if err := Config.ReadInConfig(); err != nil {
+		panic(err)
+	}
+
+	serverConfig, clientConfig := getNacosConfig(Config)
+
+	// Create config client and get remote config
+	if configClient, err := clients.NewConfigClient(
+		vo.NacosClientParam{
+			ClientConfig:  &clientConfig,
+			ServerConfigs: serverConfig,
+		},
+	); err != nil {
+		log.Fatalf("Failed to create config client: %v", err)
+	} else if remoteConfig, err := getRemoteConfig(configClient, Config); err != nil {
+		log.Fatalf("Failed to get remote config: %v", err)
+	} else {
+		keys := remoteConfig.AllKeys()
+
+		for _, key := range keys {
+			Config.Set(key, remoteConfig.Get(key))
+		}
+	}
+
+	// Create naming client and register service
+	if namingClient, err := clients.NewNamingClient(
+		vo.NacosClientParam{
+			ClientConfig:  &clientConfig,
+			ServerConfigs: serverConfig,
+		},
+	); err != nil {
+		log.Fatalf("Failed to create naming client: %v", err)
+	} else if success, err := registerService(namingClient, Config); err != nil {
+		log.Fatalf("Failed to register service: %v", err)
+	} else if !success {
+		log.Fatalf("Failed to register service")
+	}
+}
+
+func getFlatSet() (*pflag.FlagSet, error) {
 	flagSet := pflag.NewFlagSet("system", pflag.ContinueOnError)
 
 	flagSet.ParseErrorsWhitelist = pflag.ParseErrorsWhitelist{UnknownFlags: true}
@@ -41,18 +97,39 @@ func InitNacos() {
 	flagSet.String("nacos.password", "", "nacos password")
 	flagSet.Int("server.port", 6103, "server port")
 
-	flagSet.Parse(os.Args[1:])
-
-	if err := Config.BindPFlags(flagSet); err != nil {
-		panic(err)
+	if err := flagSet.Parse(os.Args[1:]); err != nil {
+		return nil, err
 	}
 
-	Config.SetConfigType("yml")
+	return flagSet, nil
+}
 
+func getNacosConfig(config *viper.Viper) ([]constant.ServerConfig, constant.ClientConfig) {
+	serverConfig := []constant.ServerConfig{
+		{
+			IpAddr:      config.GetString("nacos.host"),
+			Port:        config.GetUint64("nacos.port"),
+			ContextPath: config.GetString("nacos.context-path"),
+		},
+	}
+
+	clientConfig := constant.ClientConfig{
+		NamespaceId:         config.GetString("nacos.namespace"),
+		Username:            config.GetString("nacos.username"),
+		Password:            config.GetString("nacos.password"),
+		TimeoutMs:           5000,
+		NotLoadCacheAtStart: true,
+		LogLevel:            "debug",
+	}
+
+	return serverConfig, clientConfig
+}
+
+func getLocalConfigPathAndName(config *viper.Viper) (string, string) {
 	configPath := "./"
 	configName := "application"
 
-	configLocation := Config.GetString("spring.config.location")
+	configLocation := config.GetString("spring.config.location")
 
 	if configLocation != "" {
 		if file.IsExistFile(configLocation) {
@@ -60,97 +137,42 @@ func InitNacos() {
 			configName = strings.TrimSuffix(filepath.Base(configLocation), filepath.Ext(configLocation))
 		}
 	} else {
-		activeProfile := Config.GetString("spring.profiles.active")
+		activeProfile := config.GetString("spring.profiles.active")
 
 		if activeProfile != "" && file.IsExistFile(path.Join("./", fmt.Sprintf("application-%s.yml", activeProfile))) {
 			configName = fmt.Sprintf("application-%s", activeProfile)
 		}
 	}
 
-	Config.AddConfigPath(configPath)
-	Config.SetConfigName(configName)
-	Config.SetConfigType("yml")
+	return configPath, configName
+}
 
-	if err := Config.ReadInConfig(); err != nil {
-		panic(err)
-	}
+func getRemoteConfig(configClient config_client.IConfigClient, config *viper.Viper) (*viper.Viper, error) {
+	remoteConfig := viper.New()
 
-	//创建 serverConfig
-	serverConfig := []constant.ServerConfig{
-		{
-			IpAddr:      Config.GetString("nacos.host"),
-			Port:        Config.GetUint64("nacos.port"),
-			ContextPath: Config.GetString("nacos.context-path"),
-		},
-	}
-
-	// 创建clientConfig
-	clientConfig := constant.ClientConfig{
-		NamespaceId:         Config.GetString("nacos.namespace"),
-		Username:            Config.GetString("nacos.username"),
-		Password:            Config.GetString("nacos.password"),
-		TimeoutMs:           5000,
-		NotLoadCacheAtStart: true,
-		LogLevel:            "debug",
-	}
-
-	// 创建动态配置客户端
-	configClient, err := clients.NewConfigClient(
-		vo.NacosClientParam{
-			ClientConfig:  &clientConfig,
-			ServerConfigs: serverConfig,
-		},
-	)
-
-	if err != nil {
-		log.Fatalf("初始化nacos动态配置客户端失败: %s", err.Error())
-	}
+	remoteConfig.SetConfigType("yml")
 
 	if content, err := configClient.GetConfig(vo.ConfigParam{
-		DataId: fmt.Sprintf("%s-%s.yml", Config.GetString("spring.application.name"), Config.GetString("spring.profiles.active")),
-		Group:  Config.GetString("nacos.group")}); err != nil {
-		log.Fatalf("获取配置文件失败: %s", err.Error())
-	} else {
-		remoteConfig := viper.New()
+		DataId: fmt.Sprintf("%s-%s.yml", config.GetString("spring.application.name"), config.GetString("spring.profiles.active")),
+		Group:  config.GetString("nacos.group")}); err != nil {
 
-		remoteConfig.SetConfigType("yml")
-
-		if err := remoteConfig.ReadConfig(bytes.NewBuffer([]byte(content))); err != nil {
-			log.Fatalf("获取配置文件失败: %s", err.Error())
-		}
-
-		keys := remoteConfig.AllKeys()
-
-		for _, key := range keys {
-			Config.Set(key, remoteConfig.Get(key))
-		}
+		return nil, err
+	} else if err := remoteConfig.ReadConfig(bytes.NewBuffer([]byte(content))); err != nil {
+		return nil, err
 	}
 
-	// 创建服务发现客户端
-	namingClient, err := clients.NewNamingClient(
-		vo.NacosClientParam{
-			ClientConfig:  &clientConfig,
-			ServerConfigs: serverConfig,
-		},
-	)
+	return remoteConfig, nil
+}
 
-	if err != nil {
-		log.Fatalf("初始化nacos服务发现客户端失败: %s", err.Error())
-	}
-
-	// 服务注册
-	success, err := namingClient.RegisterInstance(vo.RegisterInstanceParam{
+func registerService(namingClient naming_client.INamingClient, config *viper.Viper) (bool, error) {
+	return namingClient.RegisterInstance(vo.RegisterInstanceParam{
 		Ip:          util.ExternalIP().String(),
-		Port:        Config.GetUint64("server.port"),
-		ServiceName: Config.GetString("spring.application.name"),
+		Port:        config.GetUint64("server.port"),
+		ServiceName: config.GetString("spring.application.name"),
 		Weight:      1,
 		Enable:      true,
 		Healthy:     true,
 		Ephemeral:   true,
 		Metadata:    map[string]string{"preserved.register.source": "SPRING_CLOUD"},
 	})
-
-	if !success || err != nil {
-		log.Fatalf("初始化nacos服务注册失败: %s", err.Error())
-	}
 }

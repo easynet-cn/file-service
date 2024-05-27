@@ -25,9 +25,9 @@ func main() {
 		WriteTimeout: 0,
 	}
 
-	log.Logger.Info("服务初始化成功")
+	log.Logger.Info("Service started successfully")
 
 	if err := s.ListenAndServe(); err != nil {
-		log.Logger.Error("服务启动异常", zap.Error(err))
+		log.Logger.Error("Service startup failed", zap.Error(err))
 	}
 }
