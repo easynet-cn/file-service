@@ -355,13 +355,6 @@ func generateFileKey(uploadFile OssUploadFile) string {
 			sb.WriteString("/")
 		}
 
-		profilesActive := Config.GetString("spring.profiles.active")
-
-		if profilesActive != "prod" {
-			sb.WriteString(strings.ToLower(profilesActive))
-			sb.WriteString("/")
-		}
-
 		if uploadFile.UseSourceFilename == 1 {
 			sb.WriteString(uploadFile.SourceFile)
 		} else {
