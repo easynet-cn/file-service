@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -94,6 +95,49 @@ func (c *fileController) Upload(ctx *gin.Context) {
 				} else {
 					ctx.JSON(http.StatusOK, file)
 				}
+			}
+		}
+	}
+}
+
+func (c *fileController) UploadBase64(ctx *gin.Context) {
+	m := &object.OssUploadBase64{}
+
+	if err := ctx.BindJSON(&m); err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+	} else if m.Data == "" {
+		ctx.JSON(http.StatusBadRequest, "上传文件不能为空")
+	} else if bytes, err := base64.StdEncoding.DecodeString(m.Data); err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+	} else {
+		fileExt := strings.TrimPrefix(path.Ext(m.SourceFile), ".")
+		tempFile := path.Join(os.TempDir(), uuid.NewString()+path.Ext(m.SourceFile))
+
+		if err := os.WriteFile(tempFile, bytes, 0666); err != nil {
+			log.Logger.Error("保存上传文件失败", zap.Any("file", m), zap.Any("tempFile", tempFile), zap.Error(err))
+
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+		} else {
+			if m.SourceFileType == "" {
+				m.SourceFileType = fileExt
+			}
+
+			if m.ProcessParamsStr != "" {
+				processParams := make([]object.ProcessParam, 0)
+
+				if err := json.Unmarshal([]byte(m.ProcessParamsStr), &processParams); err != nil {
+					log.Logger.Error("解析ProcessParamsStr失败", zap.String("ProcessParamsStr", m.ProcessParamsStr), zap.Error(err))
+				} else {
+					m.ProcessParams = processParams
+				}
+			}
+
+			if file, err := object.UploadFile(m.OssUploadFile, tempFile); err != nil {
+				log.Logger.Error("上传文件失败", zap.Any("uploadFile", m), zap.String("tempFile", tempFile), zap.Error(err))
+
+				ctx.JSON(http.StatusInternalServerError, err.Error())
+			} else {
+				ctx.JSON(http.StatusOK, file)
 			}
 		}
 	}

@@ -44,6 +44,7 @@ func NewRouter(viper *viper.Viper) *gin.Engine {
 	apiGroup.POST("/files/search/page", controller.FileController.SearchPage)      //文件分页查询
 	apiGroup.POST("/files/upload/token", controller.FileController.GetUploadToken) //获取上传凭证
 	apiGroup.POST("/files/upload", controller.FileController.Upload)               //上传文件
+	apiGroup.POST("/files/upload/base64", controller.FileController.UploadBase64)  //上传Base64文件
 	apiGroup.POST("/files", controller.FileController.Create)                      //创建文件数据
 	apiGroup.POST("/files/batch", controller.FileController.CreateBatch)           //批量创建文件数据
 

@@ -13,3 +13,8 @@ type OssUploadFile struct {
 	ProcessParams     []ProcessParam `json:"processParams"`                              //处理参数
 	ProcessParamsStr  string         `form:"processParams"`                              //处理参数
 }
+
+type OssUploadBase64 struct {
+	OssUploadFile
+	Data string `json:"data" form:"data"` //base64数据
+}
