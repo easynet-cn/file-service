@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/easynet-cn/file-service/log"
@@ -112,6 +113,12 @@ func (c *fileController) UploadBase64(ctx *gin.Context) {
 	} else {
 		fileExt := strings.TrimPrefix(path.Ext(m.SourceFile), ".")
 		tempFile := path.Join(os.TempDir(), uuid.NewString()+path.Ext(m.SourceFile))
+
+		if err = os.MkdirAll(filepath.Dir(tempFile), 0750); err != nil {
+			log.Logger.Error("创建临时文件夹失败", zap.Any("file", m), zap.Any("tempFile", tempFile), zap.Error(err))
+
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+		}
 
 		if err := os.WriteFile(tempFile, bytes, 0666); err != nil {
 			log.Logger.Error("保存上传文件失败", zap.Any("file", m), zap.Any("tempFile", tempFile), zap.Error(err))
