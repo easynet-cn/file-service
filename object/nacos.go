@@ -119,7 +119,7 @@ func getNacosConfig(config *viper.Viper) ([]constant.ServerConfig, constant.Clie
 		Password:            config.GetString("nacos.password"),
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
-		LogLevel:            "debug",
+		LogLevel:            "warn",
 	}
 
 	return serverConfig, clientConfig
