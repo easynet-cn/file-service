@@ -15,6 +15,12 @@ func InitDB(config *viper.Viper) {
 	dbs = make(map[string]*xorm.Engine, len(dbConfigs))
 
 	for k := range dbConfigs {
+		dbType := config.GetString(fmt.Sprintf("spring.datasources.%s.type", k))
+
+		if dbType == "" {
+			dbType = "mysql"
+		}
+
 		if engine, err := xorm.NewEngine("mysql", config.GetString(fmt.Sprintf("spring.datasources.%s.url", k))); err != nil {
 			panic("连接数据库失败, error=" + err.Error())
 		} else {
