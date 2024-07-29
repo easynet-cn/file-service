@@ -14,7 +14,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
-	go.elastic.co/ecszap v1.0.2
+	go.elastic.co/ecszap v1.0.3
 	go.uber.org/zap v1.27.0
 	xorm.io/xorm v1.3.9
 )
