@@ -78,6 +78,8 @@ func InitNacos() {
 	} else if !success {
 		log.Fatalf("Failed to register service")
 	}
+
+	registerNacoseServices()
 }
 
 func getFlatSet() (*pflag.FlagSet, error) {
@@ -165,14 +167,77 @@ func getRemoteConfig(configClient config_client.IConfigClient, config *viper.Vip
 }
 
 func registerService(namingClient naming_client.INamingClient, config *viper.Viper) (bool, error) {
+	serviceName := config.GetString("nacos.service-name")
+
+	if serviceName == "" {
+		serviceName = config.GetString("spring.application.name")
+	}
+
 	return namingClient.RegisterInstance(vo.RegisterInstanceParam{
 		Ip:          util.ExternalIP().String(),
 		Port:        config.GetUint64("server.port"),
-		ServiceName: config.GetString("spring.application.name"),
+		ServiceName: serviceName,
 		Weight:      1,
 		Enable:      true,
 		Healthy:     true,
 		Ephemeral:   true,
 		Metadata:    map[string]string{"preserved.register.source": "SPRING_CLOUD"},
 	})
+}
+
+func registerNacoseServices() {
+	for k := range Config.GetStringMap("nacos.services") {
+		//创建 serverConfig
+		serverConfig := []constant.ServerConfig{
+			{
+				IpAddr:      Config.GetString(fmt.Sprintf("nacos.services.%s.host", k)),
+				Port:        Config.GetUint64(fmt.Sprintf("nacos.services.%s.port", k)),
+				ContextPath: Config.GetString(fmt.Sprintf("nacos.services.%s.context-path", k)),
+			},
+		}
+
+		// 创建clientConfig
+		clientConfig := constant.ClientConfig{
+			NamespaceId:         Config.GetString(fmt.Sprintf("nacos.services.%s.namespace", k)),
+			Username:            Config.GetString(fmt.Sprintf("nacos.services.%s.username", k)),
+			Password:            Config.GetString(fmt.Sprintf("nacos.services.%s.password", k)),
+			TimeoutMs:           5000,
+			NotLoadCacheAtStart: true,
+			LogLevel:            "warn",
+		}
+
+		// 创建服务发现客户端
+		namingClient, err := clients.NewNamingClient(
+			vo.NacosClientParam{
+				ClientConfig:  &clientConfig,
+				ServerConfigs: serverConfig,
+			},
+		)
+
+		if err != nil {
+			log.Fatalf("初始化nacos服务发现客户端失败: %s", err.Error())
+		}
+
+		serviceName := Config.GetString(fmt.Sprintf("nacos.services.%s.service-name", k))
+
+		if serviceName == "" {
+			serviceName = Config.GetString("spring.application.name")
+		}
+
+		// 服务注册
+		success, err := namingClient.RegisterInstance(vo.RegisterInstanceParam{
+			Ip:          util.ExternalIP().String(),
+			Port:        Config.GetUint64("server.port"),
+			ServiceName: serviceName,
+			Weight:      1,
+			Enable:      true,
+			Healthy:     true,
+			Ephemeral:   true,
+			Metadata:    map[string]string{"preserved.register.source": "SPRING_CLOUD"},
+		})
+
+		if !success || err != nil {
+			log.Fatalf("初始化nacos服务注册失败: %s", err.Error())
+		}
+	}
 }
