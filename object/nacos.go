@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/easynet-cn/file-service/util"
@@ -181,7 +182,11 @@ func registerService(namingClient naming_client.INamingClient, config *viper.Vip
 		Enable:      true,
 		Healthy:     true,
 		Ephemeral:   true,
-		Metadata:    map[string]string{"preserved.register.source": "SPRING_CLOUD"},
+		Metadata: map[string]string{
+			"preserved.register.source": "SPRING_CLOUD",
+			"goVersion":                 runtime.Version(),
+			"version":                   Version,
+		},
 	})
 }
 
@@ -233,7 +238,11 @@ func registerNacoseServices() {
 			Enable:      true,
 			Healthy:     true,
 			Ephemeral:   true,
-			Metadata:    map[string]string{"preserved.register.source": "SPRING_CLOUD"},
+			Metadata: map[string]string{
+				"preserved.register.source": "SPRING_CLOUD",
+				"goVersion":                 runtime.Version(),
+				"version":                   Version,
+			},
 		})
 
 		if !success || err != nil {

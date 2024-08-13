@@ -26,6 +26,7 @@ func NewRouter(viper *viper.Viper) *gin.Engine {
 	server.Use(Recovery)
 
 	server.GET("/system/stats", Stats)
+	server.GET("/system/version", Version)
 	server.GET("/db/sync", Sync)
 
 	apiGroup := server.Group("/v1/")
@@ -69,6 +70,10 @@ func Stats(ctx *gin.Context) {
 	runtime.ReadMemStats(stats)
 
 	ctx.JSON(http.StatusOK, stats)
+}
+
+func Version(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, object.NewSystemVersion())
 }
 
 func Sync(ctx *gin.Context) {

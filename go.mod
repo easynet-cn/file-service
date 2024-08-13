@@ -9,6 +9,7 @@ require (
 	github.com/gin-contrib/zap v1.1.3
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-sql-driver/mysql v1.8.1
+	github.com/golang-module/carbon/v2 v2.3.12
 	github.com/google/uuid v1.6.0
 	github.com/nacos-group/nacos-sdk-go/v2 v2.2.7
 	github.com/natefinch/lumberjack v2.0.0+incompatible
