@@ -11,3 +11,7 @@ type App struct {
 	CreateTime      string `xorm:"datetime 'create_time' notnull comment('创建时间')" json:"createTime"`
 	UpdateTime      string `xorm:"datetime 'update_time' notnull comment('更新时间')" json:"updateTime"`
 }
+
+func (*App) TableComment() string {
+	return "应用"
+}
