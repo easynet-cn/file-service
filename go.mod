@@ -1,6 +1,6 @@
 module github.com/easynet-cn/file-service
 
-go 1.22
+go 1.23
 
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
