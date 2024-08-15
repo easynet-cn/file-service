@@ -116,13 +116,26 @@ func getNacosConfig(config *viper.Viper) ([]constant.ServerConfig, constant.Clie
 		},
 	}
 
+	timeoutMs := Config.GetUint64("nacos.timeout-ms")
+
+	if timeoutMs <= 0 {
+		timeoutMs = 10000
+	}
+
+	notLoadCacheAtStart := Config.GetBool("nacos.not-load-cache-at-start")
+	logLevel := Config.GetString("nacos.log-level")
+
+	if logLevel == "" {
+		logLevel = "warn"
+	}
+
 	clientConfig := constant.ClientConfig{
 		NamespaceId:         config.GetString("nacos.namespace"),
 		Username:            config.GetString("nacos.username"),
 		Password:            config.GetString("nacos.password"),
-		TimeoutMs:           5000,
-		NotLoadCacheAtStart: true,
-		LogLevel:            "warn",
+		TimeoutMs:           timeoutMs,
+		NotLoadCacheAtStart: notLoadCacheAtStart,
+		LogLevel:            logLevel,
 	}
 
 	return serverConfig, clientConfig
@@ -174,19 +187,26 @@ func registerService(namingClient naming_client.INamingClient, config *viper.Vip
 		serviceName = config.GetString("spring.application.name")
 	}
 
+	weight := Config.GetFloat64("nacos.weight")
+
+	if weight <= 0 {
+		weight = 1
+	}
+
+	metadata := Config.GetStringMapString("nacos.metadata")
+
+	metadata["goVersion"] = runtime.Version()
+	metadata["version"] = Version
+
 	return namingClient.RegisterInstance(vo.RegisterInstanceParam{
 		Ip:          util.ExternalIP().String(),
 		Port:        config.GetUint64("server.port"),
 		ServiceName: serviceName,
-		Weight:      1,
+		Weight:      weight,
 		Enable:      true,
 		Healthy:     true,
 		Ephemeral:   true,
-		Metadata: map[string]string{
-			"preserved.register.source": "SPRING_CLOUD",
-			"goVersion":                 runtime.Version(),
-			"version":                   Version,
-		},
+		Metadata:    metadata,
 	})
 }
 
@@ -201,14 +221,27 @@ func registerNacoseServices() {
 			},
 		}
 
+		timeoutMs := Config.GetUint64(fmt.Sprintf("nacos.services.%s.timeout-ms", k))
+
+		if timeoutMs <= 0 {
+			timeoutMs = 10000
+		}
+
+		notLoadCacheAtStart := Config.GetBool(fmt.Sprintf("nacos.services.%s.not-load-cache-at-start", k))
+		logLevel := Config.GetString(fmt.Sprintf("nacos.services.%s.log-level", k))
+
+		if logLevel == "" {
+			logLevel = "warn"
+		}
+
 		// 创建clientConfig
 		clientConfig := constant.ClientConfig{
 			NamespaceId:         Config.GetString(fmt.Sprintf("nacos.services.%s.namespace", k)),
 			Username:            Config.GetString(fmt.Sprintf("nacos.services.%s.username", k)),
 			Password:            Config.GetString(fmt.Sprintf("nacos.services.%s.password", k)),
-			TimeoutMs:           5000,
-			NotLoadCacheAtStart: true,
-			LogLevel:            "warn",
+			TimeoutMs:           timeoutMs,
+			NotLoadCacheAtStart: notLoadCacheAtStart,
+			LogLevel:            logLevel,
 		}
 
 		// 创建服务发现客户端
@@ -229,20 +262,27 @@ func registerNacoseServices() {
 			serviceName = Config.GetString("spring.application.name")
 		}
 
+		weight := Config.GetFloat64(fmt.Sprintf("nacos.services.%s.weight", k))
+
+		if weight <= 0 {
+			weight = 1
+		}
+
+		metadata := Config.GetStringMapString(fmt.Sprintf("nacos.services.%s.metadata", k))
+
+		metadata["goVersion"] = runtime.Version()
+		metadata["version"] = Version
+
 		// 服务注册
 		success, err := namingClient.RegisterInstance(vo.RegisterInstanceParam{
 			Ip:          util.ExternalIP().String(),
 			Port:        Config.GetUint64("server.port"),
 			ServiceName: serviceName,
-			Weight:      1,
+			Weight:      weight,
 			Enable:      true,
 			Healthy:     true,
 			Ephemeral:   true,
-			Metadata: map[string]string{
-				"preserved.register.source": "SPRING_CLOUD",
-				"goVersion":                 runtime.Version(),
-				"version":                   Version,
-			},
+			Metadata:    metadata,
 		})
 
 		if !success || err != nil {
