@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/easynet-cn/file-service/util"
+	"github.com/golang-module/carbon/v2"
 	"xorm.io/xorm"
 )
 
@@ -46,5 +46,5 @@ func (r *bucketRepository) Update(engine *xorm.Engine, cols []string, entity *Bu
 }
 
 func (r *bucketRepository) DeleteById(engine *xorm.Engine, id int64) (int64, error) {
-	return engine.ID(id).Where("del_status=0").Update(&Bucket{DelStatus: 1, UpdateTime: util.GetCurrentLocalDateTime()})
+	return engine.ID(id).Where("del_status=0").Update(&Bucket{DelStatus: 1, UpdateTime: carbon.Now().ToDateTimeString()})
 }

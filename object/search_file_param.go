@@ -1,5 +1,7 @@
 package object
 
+import "github.com/easynet-cn/winter"
+
 type SearchFileParam struct {
 	Ids           []int64        `json:"ids"`           //文件ID集合
 	FileKeys      []string       `json:"fileKeys"`      //文件key集合
@@ -9,6 +11,6 @@ type SearchFileParam struct {
 }
 
 type SearchFilePageParam struct {
-	PageParam
+	winter.PageParam
 	SearchFileParam
 }

@@ -2,7 +2,8 @@ package object
 
 import (
 	"github.com/easynet-cn/file-service/repository"
-	"github.com/easynet-cn/file-service/util"
+	"github.com/easynet-cn/winter"
+	"github.com/golang-module/carbon/v2"
 )
 
 type App struct {
@@ -16,22 +17,22 @@ type App struct {
 	UpdateTime      string `json:"updateTime"`
 }
 
-func SearchApps(searchParam PageParam) (PageResult, error) {
+func SearchApps(searchParam winter.PageParam) (winter.PageResult, error) {
 	engine := GetDB()
 	total := int64(0)
 
 	if _, err := engine.SQL("SELECT COUNT(id) FROM app WHERE del_status=0").Get(&total); err != nil {
-		return *NewPageResult(), err
+		return *winter.NewPageResult(), err
 	}
 
 	if total > 0 {
 		ms := make([]App, 0)
 
 		if err := engine.SQL("SELECT * FROM app WHERE del_status=0 LIMIT ?,?", searchParam.Start(), searchParam.PageSize).Find(&ms); err != nil {
-			return *NewPageResult(), err
+			return *winter.NewPageResult(), err
 		}
 
-		pageResult := &PageResult{Total: total, Data: make([]any, len(ms))}
+		pageResult := &winter.PageResult{Total: total, Data: make([]any, len(ms))}
 
 		pageResult.TotalPages = pageResult.GetTotalPages(searchParam.PageSize)
 
@@ -41,14 +42,14 @@ func SearchApps(searchParam PageParam) (PageResult, error) {
 
 		return *pageResult, nil
 	} else {
-		return PageResult{Data: make([]any, 0)}, nil
+		return winter.PageResult{Data: make([]any, 0)}, nil
 	}
 }
 
 func CreateApp(m App) (*App, error) {
 	entity := AppToEntity(m)
 
-	now := util.GetCurrentLocalDateTime()
+	now := carbon.Now().ToDateTimeString()
 
 	entity.CreateTime = now
 	entity.UpdateTime = now
@@ -70,7 +71,7 @@ func UpdateApp(m App) (*App, error) {
 	} else {
 		cols = append(cols, "update_time")
 
-		appEntity.UpdateTime = util.GetCurrentLocalDateTime()
+		appEntity.UpdateTime = carbon.Now().ToDateTimeString()
 
 		if err := repository.AppRepository.Update(engine, cols, appEntity); err != nil {
 			return nil, err

@@ -11,6 +11,7 @@ import (
 
 	"github.com/easynet-cn/file-service/log"
 	"github.com/easynet-cn/file-service/object"
+	"github.com/easynet-cn/winter"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -166,9 +167,9 @@ func (c *fileController) CreateBatch(ctx *gin.Context) {
 	ms := make([]object.File, 0)
 
 	if err := ctx.BindJSON(&ms); err != nil {
-		ctx.JSON(http.StatusBadRequest, &object.RestResult{Status: 400, Message: err.Error()})
+		ctx.JSON(http.StatusBadRequest, &winter.RestResult{Status: 400, Message: err.Error()})
 	} else if count, err := object.BatchCreateFile(ms); err != nil {
-		ctx.JSON(http.StatusInternalServerError, &object.RestResult{Status: 500, Message: err.Error()})
+		ctx.JSON(http.StatusInternalServerError, &winter.RestResult{Status: 500, Message: err.Error()})
 	} else {
 		ctx.JSON(http.StatusOK, count)
 	}

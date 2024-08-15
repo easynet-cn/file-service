@@ -18,9 +18,9 @@ type SystemVersion struct {
 
 func NewSystemVersion() *SystemVersion {
 	return &SystemVersion{
-		ApplicationName: Config.GetString("spring.application.name"),
+		ApplicationName: Nacos.GetConfig().GetString("spring.application.name"),
 		Version:         Version,
-		Profile:         Config.GetString("spring.profiles.active"),
+		Profile:         Nacos.GetConfig().GetString("spring.profiles.active"),
 		GoVersion:       Version,
 		CurrentTime:     carbon.Now().ToDateTimeString(),
 	}

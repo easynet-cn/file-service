@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/easynet-cn/file-service/repository"
-	"github.com/easynet-cn/file-service/util"
+	"github.com/easynet-cn/winter"
+	"github.com/golang-module/carbon/v2"
 )
 
 type Bucket struct {
@@ -19,22 +20,22 @@ type Bucket struct {
 	UpdateTime    string         `json:"updateTime"`
 }
 
-func SearchBuckets(searchParam PageParam) (PageResult, error) {
+func SearchBuckets(searchParam winter.PageParam) (winter.PageResult, error) {
 	engine := GetDB()
 	total := int64(0)
 
 	if _, err := engine.SQL("SELECT COUNT(id) FROM bucket WHERE del_status=0").Get(&total); err != nil {
-		return *NewPageResult(), err
+		return *winter.NewPageResult(), err
 	}
 
 	if total > 0 {
 		ms := make([]Bucket, 0)
 
 		if err := engine.SQL("SELECT * FROM bucket WHERE del_status=0 LIMIT ?,?", searchParam.Start(), searchParam.PageSize).Find(&ms); err != nil {
-			return *NewPageResult(), err
+			return *winter.NewPageResult(), err
 		}
 
-		pageResult := &PageResult{Total: total, Data: make([]any, len(ms))}
+		pageResult := &winter.PageResult{Total: total, Data: make([]any, len(ms))}
 
 		pageResult.TotalPages = pageResult.GetTotalPages(searchParam.PageSize)
 
@@ -44,14 +45,14 @@ func SearchBuckets(searchParam PageParam) (PageResult, error) {
 
 		return *pageResult, nil
 	} else {
-		return PageResult{Data: make([]any, 0)}, nil
+		return winter.PageResult{Data: make([]any, 0)}, nil
 	}
 }
 
 func CreateBucket(m Bucket) (*Bucket, error) {
 	entity := BucketToEntity(m)
 
-	now := util.GetCurrentLocalDateTime()
+	now := carbon.Now().ToDateTimeString()
 
 	entity.CreateTime = now
 	entity.UpdateTime = now
@@ -73,7 +74,7 @@ func UpdateBucket(m Bucket) (*Bucket, error) {
 	} else {
 		cols = append(cols, "update_time")
 
-		bucketEntity.UpdateTime = util.GetCurrentLocalDateTime()
+		bucketEntity.UpdateTime = carbon.Now().ToDateTimeString()
 
 		if err := repository.BucketRepository.Update(engine, cols, bucketEntity); err != nil {
 			return nil, err

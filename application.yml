@@ -18,10 +18,10 @@ logging:
   date-time-format: "2006-01-02 15:04:05.000"
 
 nacos:
-  namespace: 0c9a8343-cf65-4bc1-804f-497d36237a5f
-  host: 127.0.0.1
+  namespace: 50e0796d-9008-4378-a5cb-32d9ff0a616a
+  host: 192.168.1.161
   port: 8848
   context-path: nacos
   group: DEFAULT_GROUP
   username: dev
-  password: Ju*9O7Fx(1WFujhP
+  password: Dev@2024

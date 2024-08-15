@@ -17,7 +17,8 @@ import (
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/easynet-cn/file-service/log"
 	"github.com/easynet-cn/file-service/repository"
-	"github.com/easynet-cn/file-service/util"
+	"github.com/easynet-cn/winter"
+	"github.com/golang-module/carbon/v2"
 	"go.uber.org/zap"
 	"xorm.io/xorm"
 )
@@ -91,7 +92,7 @@ func UploadFile(uploadFile OssUploadFile, file string) (*File, error) {
 		fileEntity.SourceFile = uploadFile.SourceFile
 		fileEntity.SourceFileSize = uploadFile.SourceFileSize
 
-		now := util.GetCurrentLocalDateTime()
+		now := carbon.Now().ToDateTimeString()
 
 		fileEntity.CreateTime = now
 		fileEntity.UpdateTime = now
@@ -153,7 +154,7 @@ func GetUploadToken(uploadFile OssUploadFile) (*OssUploadToken, error) {
 		fileEntity.SourceFile = uploadFile.SourceFile
 		fileEntity.SourceFileSize = uploadFile.SourceFileSize
 
-		now := util.GetCurrentLocalDateTime()
+		now := carbon.Now().ToDateTimeString()
 
 		fileEntity.CreateTime = now
 		fileEntity.UpdateTime = now
@@ -280,7 +281,7 @@ func SearchFiles(searchParam SearchFileParam) ([]File, error) {
 	return ms, nil
 }
 
-func SearchPageFiles(searchParam SearchFilePageParam) (PageResult, error) {
+func SearchPageFiles(searchParam SearchFilePageParam) (winter.PageResult, error) {
 	engine := GetDB()
 	where, params := buildSearchFilesWhere(searchParam)
 	countSb := new(strings.Builder)
@@ -291,7 +292,7 @@ func SearchPageFiles(searchParam SearchFilePageParam) (PageResult, error) {
 	total := int64(0)
 
 	if _, err := engine.SQL(countSb.String(), params...).Get(&total); err != nil {
-		return *NewPageResult(), err
+		return *winter.NewPageResult(), err
 	}
 
 	if total > 0 {
@@ -305,7 +306,7 @@ func SearchPageFiles(searchParam SearchFilePageParam) (PageResult, error) {
 		ms := make([]File, 0)
 
 		if err := engine.SQL(querySb.String(), queryParams...).Find(&ms); err != nil {
-			return *NewPageResult(), err
+			return *winter.NewPageResult(), err
 		}
 
 		expiredInSec := int64(60 * 60)
@@ -315,10 +316,10 @@ func SearchPageFiles(searchParam SearchFilePageParam) (PageResult, error) {
 		}
 
 		if err := mergeFiles(engine, &ms, expiredInSec, searchParam.ProcessParams); err != nil {
-			return *NewPageResult(), err
+			return *winter.NewPageResult(), err
 		}
 
-		pageResult := &PageResult{Total: total, Data: make([]any, len(ms))}
+		pageResult := &winter.PageResult{Total: total, Data: make([]any, len(ms))}
 
 		pageResult.TotalPages = pageResult.GetTotalPages(searchParam.PageSize)
 
@@ -328,7 +329,7 @@ func SearchPageFiles(searchParam SearchFilePageParam) (PageResult, error) {
 
 		return *pageResult, nil
 	} else {
-		return PageResult{Data: make([]any, 0)}, nil
+		return winter.PageResult{Data: make([]any, 0)}, nil
 	}
 }
 
@@ -358,7 +359,7 @@ func generateFileKey(uploadFile OssUploadFile) string {
 		if uploadFile.UseSourceFilename == 1 {
 			sb.WriteString(uploadFile.SourceFile)
 		} else {
-			sb.WriteString(NewObjectID().Hex())
+			sb.WriteString(winter.NewObjectID().Hex())
 			sb.WriteString(strings.ToLower(filepath.Ext(uploadFile.SourceFile)))
 		}
 
@@ -711,7 +712,7 @@ func CreateFileData(file File) ([]File, error) {
 		SourceFileAttr: file.SourceFileAttr,
 	}
 
-	now := util.GetCurrentLocalDateTime()
+	now := carbon.Now().ToDateTimeString()
 
 	fileEntity.CreateTime = now
 	fileEntity.UpdateTime = now
@@ -767,7 +768,7 @@ func BatchCreateFile(files []File) ([]File, error) {
 			SourceFileAttr: file.SourceFileAttr,
 		}
 
-		now := util.GetCurrentLocalDateTime()
+		now := carbon.Now().ToDateTimeString()
 
 		fileEntity.CreateTime = now
 		fileEntity.UpdateTime = now

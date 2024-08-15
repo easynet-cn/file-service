@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/easynet-cn/file-service/object"
+	"github.com/easynet-cn/winter"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +14,7 @@ type bucketController struct{}
 var BucketController = &bucketController{}
 
 func (c *bucketController) SearchPage(ctx *gin.Context) {
-	searchParam := &object.PageParam{}
+	searchParam := &winter.PageParam{}
 
 	if err := ctx.BindJSON(&searchParam); err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
@@ -61,6 +62,6 @@ func (c *bucketController) Delete(ctx *gin.Context) {
 	} else if affected, err := object.DeleteBucketById(id); err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 	} else {
-		ctx.JSON(http.StatusOK, &object.RestResult{Status: 200, Data: affected > 0})
+		ctx.JSON(http.StatusOK, &winter.RestResult{Status: 200, Data: affected > 0})
 	}
 }

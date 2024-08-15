@@ -12,14 +12,29 @@ import (
 	"github.com/easynet-cn/file-service/controller"
 	"github.com/easynet-cn/file-service/log"
 	"github.com/easynet-cn/file-service/object"
+	"github.com/easynet-cn/winter"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(viper *viper.Viper) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
+var (
+	GinApplication = winter.NewApplication(object.Nacos)
+)
 
-	server := gin.Default()
+func RunApplication() {
+	GinApplication.Run(
+		object.Nacos.Init,
+		object.Database.Init,
+		InitLogger,
+		NewRouter)
+}
+
+func InitLogger() {
+	log.Logger = winter.NewLogger(object.Nacos.GetConfig())
+}
+
+func NewRouter() {
+	server := GinApplication.GetEngine()
 
 	server.Use(ginzap.Ginzap(log.Logger, viper.GetString("logging.date-time-format"), false))
 	server.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -48,8 +63,6 @@ func NewRouter(viper *viper.Viper) *gin.Engine {
 	apiGroup.POST("/files/upload/base64", controller.FileController.UploadBase64)  //上传Base64文件
 	apiGroup.POST("/files", controller.FileController.Create)                      //创建文件数据
 	apiGroup.POST("/files/batch", controller.FileController.CreateBatch)           //批量创建文件数据
-
-	return server
 }
 
 func Recovery(ctx *gin.Context) {
@@ -57,7 +70,7 @@ func Recovery(ctx *gin.Context) {
 		if r := recover(); r != nil {
 			log.Logger.Error("router", zap.Error(fmt.Errorf("%v", r)))
 
-			ctx.JSON(http.StatusOK, object.RestResult{Status: 500, Code: "500", Message: "系统内部错误"})
+			ctx.JSON(http.StatusOK, winter.RestResult{Status: 500, Code: "500", Message: "系统内部错误", Error: fmt.Sprintf("%v", r)})
 		}
 	}()
 
@@ -78,8 +91,8 @@ func Version(ctx *gin.Context) {
 
 func Sync(ctx *gin.Context) {
 	if err := object.SyncDB(); err != nil {
-		ctx.JSON(http.StatusInternalServerError, object.RestResult{Status: 500, Code: "500", Message: err.Error()})
+		ctx.JSON(http.StatusInternalServerError, winter.RestResult{Status: 500, Code: "500", Message: err.Error()})
 	} else {
-		ctx.JSON(http.StatusOK, object.RestResult{Status: 200, Code: "200", Message: "同步成功"})
+		ctx.JSON(http.StatusOK, winter.RestResult{Status: 200, Code: "200", Message: "同步成功"})
 	}
 }
