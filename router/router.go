@@ -86,7 +86,7 @@ func Stats(ctx *gin.Context) {
 }
 
 func Version(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, object.NewSystemVersion())
+	ctx.JSON(http.StatusOK, winter.NewSystemVersion(object.Version, object.Nacos.GetConfig()))
 }
 
 func Sync(ctx *gin.Context) {
