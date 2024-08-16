@@ -1,19 +1,14 @@
 package router
 
 import (
-	"fmt"
-	"net/http"
-
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 
 	"github.com/easynet-cn/file-service/controller"
 	"github.com/easynet-cn/file-service/log"
 	"github.com/easynet-cn/file-service/object"
 	"github.com/easynet-cn/winter"
 	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -37,11 +32,11 @@ func NewRouter() {
 
 	server.Use(ginzap.Ginzap(log.Logger, viper.GetString("logging.date-time-format"), false))
 	server.Use(gzip.Gzip(gzip.DefaultCompression))
-	server.Use(Recovery)
+	server.Use(winter.Recovery(log.Logger))
 
 	server.GET("/system/stats", winter.SystemStats)
-	server.GET("/system/version", Version)
-	server.GET("/db/sync", Sync)
+	server.GET("/system/version", winter.Version(object.Nacos.GetConfig(), object.Version))
+	server.GET("/db/sync", winter.SyncDB(object.SyncDB))
 
 	apiGroup := server.Group("/v1/")
 
@@ -62,28 +57,4 @@ func NewRouter() {
 	apiGroup.POST("/files/upload/base64", controller.FileController.UploadBase64)  //上传Base64文件
 	apiGroup.POST("/files", controller.FileController.Create)                      //创建文件数据
 	apiGroup.POST("/files/batch", controller.FileController.CreateBatch)           //批量创建文件数据
-}
-
-func Recovery(ctx *gin.Context) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Logger.Error("router", zap.Error(fmt.Errorf("%v", r)))
-
-			ctx.JSON(http.StatusOK, winter.RestResult{Status: 500, Code: "500", Message: "系统内部错误", Error: fmt.Sprintf("%v", r)})
-		}
-	}()
-
-	ctx.Next()
-}
-
-func Version(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, winter.NewSystemVersion(object.Version, object.Nacos.GetConfig()))
-}
-
-func Sync(ctx *gin.Context) {
-	if err := object.SyncDB(); err != nil {
-		ctx.JSON(http.StatusInternalServerError, winter.RestResult{Status: 500, Code: "500", Message: err.Error()})
-	} else {
-		ctx.JSON(http.StatusOK, winter.RestResult{Status: 200, Code: "200", Message: "同步成功"})
-	}
 }
