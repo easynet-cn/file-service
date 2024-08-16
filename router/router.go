@@ -1,14 +1,10 @@
 package router
 
 import (
-	ginzap "github.com/gin-contrib/zap"
-	"github.com/spf13/viper"
-
 	"github.com/easynet-cn/file-service/controller"
 	"github.com/easynet-cn/file-service/log"
 	"github.com/easynet-cn/file-service/object"
 	"github.com/easynet-cn/winter"
-	"github.com/gin-contrib/gzip"
 )
 
 var (
@@ -20,23 +16,22 @@ func RunApplication() {
 		object.Nacos.Init,
 		object.Database.Init,
 		InitLogger,
-		NewRouter)
+		InitRouter)
 }
 
 func InitLogger() {
 	log.Logger = winter.NewLogger(object.Nacos.GetConfig())
 }
 
-func NewRouter() {
+func InitRouter() {
 	server := GinApplication.GetEngine()
 
-	server.Use(ginzap.Ginzap(log.Logger, viper.GetString("logging.date-time-format"), false))
-	server.Use(gzip.Gzip(gzip.DefaultCompression))
-	server.Use(winter.Recovery(log.Logger))
-
-	server.GET("/system/stats", winter.SystemStats)
-	server.GET("/system/version", winter.Version(object.Nacos.GetConfig(), object.Version))
-	server.GET("/db/sync", winter.SyncDB(object.SyncDB))
+	winter.RegisterDefaultMiddleware(server, &winter.SystemMiddleware{
+		Logger:     log.Logger,
+		Config:     object.Nacos.GetConfig(),
+		Version:    object.Version,
+		SyncDBFunc: object.SyncDB,
+	})
 
 	apiGroup := server.Group("/v1/")
 
