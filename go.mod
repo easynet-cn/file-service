@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
-	github.com/easynet-cn/winter v1.0.6
+	github.com/easynet-cn/winter v1.0.7
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/zap v1.1.3
 	github.com/gin-gonic/gin v1.10.0

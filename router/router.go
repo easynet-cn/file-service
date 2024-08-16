@@ -3,7 +3,6 @@ package router
 import (
 	"fmt"
 	"net/http"
-	"runtime"
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/spf13/viper"
@@ -40,7 +39,7 @@ func NewRouter() {
 	server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(Recovery)
 
-	server.GET("/system/stats", Stats)
+	server.GET("/system/stats", winter.SystemStats)
 	server.GET("/system/version", Version)
 	server.GET("/db/sync", Sync)
 
@@ -75,14 +74,6 @@ func Recovery(ctx *gin.Context) {
 	}()
 
 	ctx.Next()
-}
-
-func Stats(ctx *gin.Context) {
-	stats := &runtime.MemStats{}
-
-	runtime.ReadMemStats(stats)
-
-	ctx.JSON(http.StatusOK, stats)
 }
 
 func Version(ctx *gin.Context) {
