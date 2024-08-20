@@ -97,8 +97,10 @@ github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/r
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
-github.com/easynet-cn/winter v1.0.17 h1:9l0Uvzsjw8JOu8vK4z6ekwkvnSUJPRXgrMg8jFGCi0g=
-github.com/easynet-cn/winter v1.0.17/go.mod h1:1l2s8XK4kS6VKAIYLKh6oPAPge0B2KCssvyuMSJX7to=
+github.com/easynet-cn/winter v1.0.18 h1:5GAnjBPj8ClPtxXciwEaislDDu9TgUWPpR4DCHpO7Ho=
+github.com/easynet-cn/winter v1.0.18/go.mod h1:1l2s8XK4kS6VKAIYLKh6oPAPge0B2KCssvyuMSJX7to=
+github.com/easynet-cn/winter v1.1.0 h1:9uFWB6iTd51kFqeM9SdvUmsmbn40ox6Ddgzt/1KCdMw=
+github.com/easynet-cn/winter v1.1.0/go.mod h1:1l2s8XK4kS6VKAIYLKh6oPAPge0B2KCssvyuMSJX7to=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
