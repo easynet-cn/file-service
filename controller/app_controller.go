@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/easynet-cn/file-service/object"
@@ -16,52 +15,51 @@ var AppController = &appController{}
 func (c *appController) SearchPage(ctx *gin.Context) {
 	searchParam := &winter.PageParam{}
 
-	if err := ctx.BindJSON(&searchParam); err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+	if err := ctx.ShouldBind(&searchParam); err != nil {
+		winter.RenderBadRequestResult(ctx, err)
 	} else if pageResult, err := object.SearchApps(*searchParam); err != nil {
-		ctx.JSON(http.StatusInternalServerError, err.Error())
+		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		ctx.JSON(http.StatusOK, pageResult)
+		winter.RenderOkResult(ctx, pageResult)
 	}
 }
 
 func (c *appController) Create(ctx *gin.Context) {
 	m := &object.App{}
 
-	if err := ctx.BindJSON(&m); err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+	if err := ctx.ShouldBind(&m); err != nil {
+		winter.RenderBadRequestResult(ctx, err)
 	} else if app, err := object.CreateApp(*m); err != nil {
-		ctx.JSON(http.StatusInternalServerError, err.Error())
+		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		ctx.JSON(http.StatusOK, app)
+		winter.RenderOkResult(ctx, app)
 	}
 }
 
 func (c *appController) Update(ctx *gin.Context) {
 	m := &object.App{}
 
-	if err := ctx.BindJSON(&m); err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+	if err := ctx.ShouldBind(&m); err != nil {
+		winter.RenderBadRequestResult(ctx, err)
 	} else {
 		if id, err := strconv.ParseInt(ctx.Param("id"), 10, 64); err == nil {
 			m.Id = id
 		}
 
 		if entity, err := object.UpdateApp(*m); err != nil {
-			ctx.JSON(http.StatusInternalServerError, err.Error())
+			winter.RenderInternalServerErrorResult(ctx, err)
 		} else {
-			ctx.JSON(http.StatusOK, entity)
+			winter.RenderOkResult(ctx, entity)
 		}
 	}
-
 }
 
 func (c *appController) Delete(ctx *gin.Context) {
 	if id, err := strconv.ParseInt(ctx.Param("id"), 10, 64); err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		winter.RenderBadRequestResult(ctx, err)
 	} else if affected, err := object.DeleteAppById(id); err != nil {
-		ctx.JSON(http.StatusInternalServerError, err.Error())
+		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		ctx.JSON(http.StatusOK, &winter.RestResult{Status: 200, Data: affected > 0})
+		winter.RenderOkResult(ctx, &winter.RestResult{Status: 200, Data: affected > 0})
 	}
 }
