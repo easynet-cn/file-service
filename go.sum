@@ -99,6 +99,8 @@ github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/easynet-cn/winter v1.1.8 h1:CGeypQQbEmJsbp8g4Tzs7g6wtppZeatYFTyYuKgz3VY=
 github.com/easynet-cn/winter v1.1.8/go.mod h1:1l2s8XK4kS6VKAIYLKh6oPAPge0B2KCssvyuMSJX7to=
+github.com/easynet-cn/winter v1.1.10 h1:9a8ifBnRHGXRatt2MNwB9pYYQgTWdoPvyC3N/iy97/I=
+github.com/easynet-cn/winter v1.1.10/go.mod h1:1l2s8XK4kS6VKAIYLKh6oPAPge0B2KCssvyuMSJX7to=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
