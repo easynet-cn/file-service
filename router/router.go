@@ -1,6 +1,8 @@
 package router
 
 import (
+	"runtime"
+
 	"github.com/easynet-cn/file-service/controller"
 	"github.com/easynet-cn/file-service/log"
 	"github.com/easynet-cn/file-service/object"
@@ -8,30 +10,20 @@ import (
 )
 
 var (
-	GinApplication = winter.NewApplication(object.Nacos)
+	GinApplication = winter.NewApplication(map[string]string{"goVersion": runtime.Version(), "version": object.Version}, object.Version, object.SyncDB)
 )
 
 func RunApplication() {
-	GinApplication.Run(
-		object.Nacos.Init,
-		object.Database.Init,
-		InitLogger,
-		InitRouter)
-}
+	log.Logger = GinApplication.GetLogger()
+	object.Nacos = GinApplication.GetNacos()
+	object.Database = GinApplication.GetDatabase()
 
-func InitLogger() {
-	log.Logger = winter.NewLogger(object.Nacos.GetConfig())
+	GinApplication.Run(
+		InitRouter)
 }
 
 func InitRouter() {
 	server := GinApplication.GetEngine()
-
-	winter.RegisterDefaultMiddleware(server, &winter.SystemMiddleware{
-		Logger:     log.Logger,
-		Config:     object.Nacos.GetConfig(),
-		Version:    object.Version,
-		SyncDBFunc: object.SyncDB,
-	})
 
 	apiGroup := server.Group("/v1/")
 

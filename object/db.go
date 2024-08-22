@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	Database = winter.NewDatabase(Nacos.GetConfig())
+	Database *winter.Database
 )
 
 func GetDB() *xorm.Engine {
