@@ -60,6 +60,6 @@ func (c *appController) Delete(ctx *gin.Context) {
 	} else if affected, err := object.DeleteAppById(id); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, &winter.RestResult{Status: 200, Data: affected > 0})
+		winter.RenderSuccessResult(ctx, &winter.RestResult{Status: 200, Data: affected > 0})
 	}
 }
