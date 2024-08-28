@@ -20,7 +20,7 @@ func (c *appController) SearchPage(ctx *gin.Context) {
 	} else if pageResult, err := object.SearchApps(*searchParam); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, pageResult)
+		winter.RenderSuccessResult(ctx, pageResult)
 	}
 }
 
@@ -32,7 +32,7 @@ func (c *appController) Create(ctx *gin.Context) {
 	} else if app, err := object.CreateApp(*m); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, app)
+		winter.RenderSuccessResult(ctx, app)
 	}
 }
 
@@ -49,7 +49,7 @@ func (c *appController) Update(ctx *gin.Context) {
 		if entity, err := object.UpdateApp(*m); err != nil {
 			winter.RenderInternalServerErrorResult(ctx, err)
 		} else {
-			winter.RenderOkResult(ctx, entity)
+			winter.RenderSuccessResult(ctx, entity)
 		}
 	}
 }

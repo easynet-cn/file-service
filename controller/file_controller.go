@@ -30,7 +30,7 @@ func (c *fileController) Search(ctx *gin.Context) {
 	} else if ms, err := object.SearchFiles(*searchParam); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, ms)
+		winter.RenderSuccessResult(ctx, ms)
 	}
 }
 
@@ -42,7 +42,7 @@ func (c *fileController) SearchPage(ctx *gin.Context) {
 	} else if pageResult, err := object.SearchPageFiles(*searchParam); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, pageResult)
+		winter.RenderSuccessResult(ctx, pageResult)
 	}
 }
 
@@ -54,7 +54,7 @@ func (c *fileController) GetUploadToken(ctx *gin.Context) {
 	} else if uploadToken, err := object.GetUploadToken(*m); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, uploadToken)
+		winter.RenderSuccessResult(ctx, uploadToken)
 	}
 }
 
@@ -96,7 +96,7 @@ func (c *fileController) Upload(ctx *gin.Context) {
 
 					winter.RenderInternalServerErrorResult(ctx, err)
 				} else {
-					winter.RenderOkResult(ctx, file)
+					winter.RenderSuccessResult(ctx, file)
 				}
 			}
 		}
@@ -146,7 +146,7 @@ func (c *fileController) UploadBase64(ctx *gin.Context) {
 
 				winter.RenderInternalServerErrorResult(ctx, err)
 			} else {
-				winter.RenderOkResult(ctx, file)
+				winter.RenderSuccessResult(ctx, file)
 			}
 		}
 	}
@@ -160,7 +160,7 @@ func (c *fileController) Create(ctx *gin.Context) {
 	} else if files, err := object.CreateFileData(*m); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, files)
+		winter.RenderSuccessResult(ctx, files)
 	}
 }
 
@@ -172,6 +172,6 @@ func (c *fileController) CreateBatch(ctx *gin.Context) {
 	} else if count, err := object.BatchCreateFile(ms); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, winter.NewRestResult(http.StatusOK, "200", count, ""))
+		winter.RenderSuccessResult(ctx, winter.NewRestResult(http.StatusOK, "200", count, ""))
 	}
 }

@@ -20,7 +20,7 @@ func (c *bucketController) SearchPage(ctx *gin.Context) {
 	} else if pageResult, err := object.SearchBuckets(*searchParam); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, pageResult)
+		winter.RenderSuccessResult(ctx, pageResult)
 	}
 }
 
@@ -32,7 +32,7 @@ func (c *bucketController) Create(ctx *gin.Context) {
 	} else if bucket, err := object.CreateBucket(*m); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, bucket)
+		winter.RenderSuccessResult(ctx, bucket)
 	}
 }
 
@@ -46,10 +46,10 @@ func (c *bucketController) Update(ctx *gin.Context) {
 			m.Id = id
 		}
 
-		if entity, err := object.UpdateBucket(*m); err != nil {
+		if bucket, err := object.UpdateBucket(*m); err != nil {
 			winter.RenderInternalServerErrorResult(ctx, err)
 		} else {
-			winter.RenderOkResult(ctx, entity)
+			winter.RenderSuccessResult(ctx, bucket)
 		}
 	}
 }
@@ -60,6 +60,6 @@ func (c *bucketController) Delete(ctx *gin.Context) {
 	} else if affected, err := object.DeleteBucketById(id); err != nil {
 		winter.RenderInternalServerErrorResult(ctx, err)
 	} else {
-		winter.RenderOkResult(ctx, &winter.RestResult{Status: 200, Data: affected > 0})
+		winter.RenderSuccessResult(ctx, &winter.RestResult{Status: 200, Data: affected > 0})
 	}
 }
