@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/golang-module/carbon/v2"
+	"github.com/dromara/carbon/v2"
 	"xorm.io/xorm"
 )
 
@@ -31,12 +31,6 @@ func (r *appRepository) FindByIdIn(engine *xorm.Engine, ids []int64) ([]App, err
 	err := engine.In("id", ids).Find(&entities)
 
 	return entities, err
-}
-
-func (r *appRepository) Create(engine *xorm.Engine, entity *App) error {
-	_, err := engine.Insert(entity)
-
-	return err
 }
 
 func (r *appRepository) Update(engine *xorm.Engine, cols []string, entity *App) error {

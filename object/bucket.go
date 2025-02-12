@@ -3,9 +3,9 @@ package object
 import (
 	"encoding/json"
 
+	"github.com/dromara/carbon/v2"
 	"github.com/easynet-cn/file-service/repository"
 	"github.com/easynet-cn/winter"
-	"github.com/golang-module/carbon/v2"
 )
 
 type Bucket struct {

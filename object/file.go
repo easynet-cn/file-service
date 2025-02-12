@@ -15,10 +15,10 @@ import (
 
 	"github.com/Knetic/govaluate"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/dromara/carbon/v2"
 	"github.com/easynet-cn/file-service/log"
 	"github.com/easynet-cn/file-service/repository"
 	"github.com/easynet-cn/winter"
-	"github.com/golang-module/carbon/v2"
 	"go.uber.org/zap"
 	"xorm.io/xorm"
 )

@@ -1,9 +1,10 @@
 package object
 
 import (
+	"github.com/dromara/carbon/v2"
 	"github.com/easynet-cn/file-service/repository"
 	"github.com/easynet-cn/winter"
-	"github.com/golang-module/carbon/v2"
+	"github.com/easynet-cn/winter/orm"
 )
 
 type App struct {
@@ -19,19 +20,11 @@ type App struct {
 
 func SearchApps(searchParam winter.PageParam) (winter.PageResult, error) {
 	engine := GetDB()
-	total := int64(0)
+	ms := make([]App, 0)
 
-	if _, err := engine.SQL("SELECT COUNT(id) FROM app WHERE del_status=0").Get(&total); err != nil {
+	if total, err := orm.FindPagination(engine, &ms, "SELECT COUNT(id) FROM app WHERE del_status=0", []any{}, "SELECT * FROM app WHERE del_status=0 LIMIT ?,?", []any{searchParam.Start(), searchParam.PageSize}); err != nil {
 		return *winter.NewPageResult(), err
-	}
-
-	if total > 0 {
-		ms := make([]App, 0)
-
-		if err := engine.SQL("SELECT * FROM app WHERE del_status=0 LIMIT ?,?", searchParam.Start(), searchParam.PageSize).Find(&ms); err != nil {
-			return *winter.NewPageResult(), err
-		}
-
+	} else {
 		pageResult := &winter.PageResult{Total: total, Data: make([]any, len(ms))}
 
 		pageResult.TotalPages = pageResult.GetTotalPages(searchParam.PageSize)
@@ -41,8 +34,6 @@ func SearchApps(searchParam winter.PageParam) (winter.PageResult, error) {
 		}
 
 		return *pageResult, nil
-	} else {
-		return winter.PageResult{Data: make([]any, 0)}, nil
 	}
 }
 
@@ -54,7 +45,7 @@ func CreateApp(m App) (*App, error) {
 	entity.CreateTime = now
 	entity.UpdateTime = now
 
-	if err := repository.AppRepository.Create(GetDB(), entity); err != nil || entity.Id == 0 {
+	if err := orm.Create(GetDB(), entity); err != nil || entity.Id == 0 {
 		return nil, err
 	}
 
