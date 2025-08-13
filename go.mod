@@ -1,12 +1,12 @@
 module github.com/easynet-cn/file-service
 
-go 1.24
+go 1.25
 
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
 	github.com/dromara/carbon/v2 v2.6.11
-	github.com/easynet-cn/winter v1.2.5
+	github.com/easynet-cn/winter v1.3.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0
@@ -93,7 +93,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/redis/go-redis/v9 v9.12.0 // indirect
+	github.com/redis/go-redis/v9 v9.12.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
@@ -103,8 +103,8 @@ require (
 	github.com/spf13/viper v1.20.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.6 // indirect
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/ess v1.1.5 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.10 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/ess v1.1.10 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
